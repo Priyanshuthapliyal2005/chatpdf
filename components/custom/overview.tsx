@@ -19,8 +19,8 @@ export const Overview = () => {
           <span>+</span>
           <MessageIcon />
         </p>
-        <p>
-          Document QA Bot
+        <p className="flex flex-row justify-center gap-4 items-center text-zinc-900 dark:text-zinc-50">
+          Attachment Question Answer Bot
         </p>
       </div>
     </motion.div>

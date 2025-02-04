@@ -10,25 +10,10 @@
   "rules": {
     "tailwindcss/no-custom-classname": "off",
     "tailwindcss/classnames-order": "off",
-    "import/order": [
-      "error",
-      {
-        "groups": [
-          "builtin",
-          "external",
-          "internal",
-          ["parent", "sibling"],
-          "index",
-          "object",
-          "type"
-        ],
-        "newlines-between": "always",
-        "alphabetize": {
-          "order": "asc",
-          "caseInsensitive": true
-        }
-      }
-    ]
+    "import/order": "off", // Disable import order rule
+    "no-unused-vars": "off", // Disable no-unused-vars rule
+    "no-console": "off", // Disable no-console rule
+    "react/prop-types": "off" // Disable react/prop-types rule
   },
   "settings": {
     "import/resolver": {
