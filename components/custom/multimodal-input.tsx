@@ -21,14 +21,14 @@ import { Textarea } from "../ui/textarea";
 
 const suggestedActions = [
   {
-    title: "Help me book a flight",
-    label: "from San Francisco to London",
-    action: "Help me book a flight from San Francisco to London",
+    title: "Can you describe this image?",
+    label: "for an image document",
+    action: "Can you describe this image?",
   },
   {
-    title: "What is the status",
-    label: "of flight BA142 flying tmrw?",
-    action: "What is the status of flight BA142 flying tmrw?",
+    title: "Can you summarize this PDF?",
+    label: "for a PDF document",
+    action: "Can you summarize this PDF?",
   },
 ];
 
@@ -90,7 +90,8 @@ export function MultimodalInput({
       experimental_attachments: attachments,
     });
 
-    setAttachments([]);
+    // Removed attachment state clearing so the right preview remains
+    // setAttachments([]);
 
     if (width && width > 768) {
       textareaRef.current?.focus();
@@ -138,10 +139,8 @@ export function MultimodalInput({
           (attachment) => attachment !== undefined,
         );
 
-        setAttachments((currentAttachments) => [
-          ...currentAttachments,
-          ...successfullyUploadedAttachments,
-        ]);
+        // Overwrite previous attachments with new ones
+        setAttachments(successfullyUploadedAttachments);
       } catch (error) {
         console.error("Error uploading files!", error);
       } finally {
@@ -152,39 +151,7 @@ export function MultimodalInput({
   );
 
   return (
-    <div className="relative w-full flex flex-col gap-4">
-      {messages.length === 0 &&
-        attachments.length === 0 &&
-        uploadQueue.length === 0 && (
-          <div className="grid sm:grid-cols-2 gap-4 w-full md:px-0 mx-auto md:max-w-[500px]">
-            {suggestedActions.map((suggestedAction, index) => (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ delay: 0.05 * index }}
-                key={index}
-                className={index > 1 ? "hidden sm:block" : "block"}
-              >
-                <button
-                  onClick={async () => {
-                    append({
-                      role: "user",
-                      content: suggestedAction.action,
-                    });
-                  }}
-                  className="border-none bg-muted/50 w-full text-left border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded-lg p-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex flex-col"
-                >
-                  <span className="font-medium">{suggestedAction.title}</span>
-                  <span className="text-zinc-500 dark:text-zinc-400">
-                    {suggestedAction.label}
-                  </span>
-                </button>
-              </motion.div>
-            ))}
-          </div>
-        )}
-
+    <div className="relative w-full">
       <input
         type="file"
         className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
@@ -194,80 +161,64 @@ export function MultimodalInput({
         tabIndex={-1}
       />
 
-      {(attachments.length > 0 || uploadQueue.length > 0) && (
-        <div className="flex flex-row gap-2 overflow-x-scroll">
-          {attachments.map((attachment) => (
-            <PreviewAttachment key={attachment.url} attachment={attachment} />
-          ))}
+      <div className="flex flex-row">
+        <div className="flex-1">
+          <Textarea
+            ref={textareaRef}
+            placeholder="Ask your question about the attached document or image..."
+            value={input}
+            onChange={handleInput}
+            className="min-h-[24px] overflow-hidden resize-none rounded-lg text-base bg-muted border-none"
+            rows={3}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
 
-          {uploadQueue.map((filename) => (
-            <PreviewAttachment
-              key={filename}
-              attachment={{
-                url: "",
-                name: filename,
-                contentType: "",
-              }}
-              isUploading={true}
-            />
-          ))}
+                if (isLoading) {
+                  toast.error("Please wait for the document QA bot to finish its response!");
+                } else {
+                  submitForm();
+                }
+              }
+            }}
+          />
         </div>
-      )}
 
-      <Textarea
-        ref={textareaRef}
-        placeholder="Send a message..."
-        value={input}
-        onChange={handleInput}
-        className="min-h-[24px] overflow-hidden resize-none rounded-lg text-base bg-muted border-none"
-        rows={3}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" && !event.shiftKey) {
-            event.preventDefault();
-
-            if (isLoading) {
-              toast.error("Please wait for the model to finish its response!");
-            } else {
+        {isLoading ? (
+          <Button
+            className="rounded-full p-1.5 m-0.5 text-white"
+            onClick={(event) => {
+              event.preventDefault();
+              stop();
+            }}
+          >
+            <StopIcon size={14} />
+          </Button>
+        ) : (
+          <Button
+            className="rounded-full p-1.5 m-0.5 text-white"
+            onClick={(event) => {
+              event.preventDefault();
               submitForm();
-            }
-          }
-        }}
-      />
+            }}
+            disabled={input.length === 0 || uploadQueue.length > 0}
+          >
+            <ArrowUpIcon size={14} />
+          </Button>
+        )}
 
-      {isLoading ? (
         <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 text-white"
+          className="rounded-full p-1.5 m-0.5 dark:border-zinc-700"
           onClick={(event) => {
             event.preventDefault();
-            stop();
+            fileInputRef.current?.click();
           }}
+          variant="outline"
+          disabled={isLoading}
         >
-          <StopIcon size={14} />
+          <PaperclipIcon size={14} />
         </Button>
-      ) : (
-        <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 text-white"
-          onClick={(event) => {
-            event.preventDefault();
-            submitForm();
-          }}
-          disabled={input.length === 0 || uploadQueue.length > 0}
-        >
-          <ArrowUpIcon size={14} />
-        </Button>
-      )}
-
-      <Button
-        className="rounded-full p-1.5 h-fit absolute bottom-2 right-10 m-0.5 dark:border-zinc-700"
-        onClick={(event) => {
-          event.preventDefault();
-          fileInputRef.current?.click();
-        }}
-        variant="outline"
-        disabled={isLoading}
-      >
-        <PaperclipIcon size={14} />
-      </Button>
+      </div>
     </div>
   );
 }

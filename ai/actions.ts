@@ -3,132 +3,81 @@ import { z } from "zod";
 
 import { geminiFlashModel } from ".";
 
-export async function generateSampleFlightStatus({
-  flightNumber,
-  date,
+export async function generateDocumentSummary({
+  documentTitle,
+  schoolName,
 }: {
-  flightNumber: string;
-  date: string;
+  documentTitle: string;
+  schoolName: string;
 }) {
-  const { object: flightStatus } = await generateObject({
+  const { object: documentSummary } = await generateObject({
     model: geminiFlashModel,
-    prompt: `Flight status for flight number ${flightNumber} on ${date}`,
+    prompt: `Provide a concise summary for the document titled "${documentTitle}" from ${schoolName}. Highlight its key points.`,
     schema: z.object({
-      flightNumber: z.string().describe("Flight number, e.g., BA123, AA31"),
-      departure: z.object({
-        cityName: z.string().describe("Name of the departure city"),
-        airportCode: z.string().describe("IATA code of the departure airport"),
-        airportName: z.string().describe("Full name of the departure airport"),
-        timestamp: z.string().describe("ISO 8601 departure date and time"),
-        terminal: z.string().describe("Departure terminal"),
-        gate: z.string().describe("Departure gate"),
-      }),
-      arrival: z.object({
-        cityName: z.string().describe("Name of the arrival city"),
-        airportCode: z.string().describe("IATA code of the arrival airport"),
-        airportName: z.string().describe("Full name of the arrival airport"),
-        timestamp: z.string().describe("ISO 8601 arrival date and time"),
-        terminal: z.string().describe("Arrival terminal"),
-        gate: z.string().describe("Arrival gate"),
-      }),
-      totalDistanceInMiles: z
-        .number()
-        .describe("Total flight distance in miles"),
+      title: z.string().describe("Title of the document"),
+      schoolName: z.string().describe("Name of the school"),
+      summary: z.string().describe("Summary of the document"),
     }),
   });
 
-  return flightStatus;
+  return documentSummary;
 }
 
-export async function generateSampleFlightSearchResults({
-  origin,
-  destination,
+export async function generateDocumentAnswer({
+  documentTitle,
+  question,
 }: {
-  origin: string;
-  destination: string;
+  documentTitle: string;
+  question: string;
 }) {
-  const { object: flightSearchResults } = await generateObject({
+  const { object: documentAnswer } = await generateObject({
     model: geminiFlashModel,
-    prompt: `Generate search results for flights from ${origin} to ${destination}, limit to 4 results`,
-    output: "array",
+    prompt: `Answer this question: "${question}" regarding the document titled "${documentTitle}".`,
     schema: z.object({
-      id: z
-        .string()
-        .describe("Unique identifier for the flight, like BA123, AA31, etc."),
-      departure: z.object({
-        cityName: z.string().describe("Name of the departure city"),
-        airportCode: z.string().describe("IATA code of the departure airport"),
-        timestamp: z.string().describe("ISO 8601 departure date and time"),
-      }),
-      arrival: z.object({
-        cityName: z.string().describe("Name of the arrival city"),
-        airportCode: z.string().describe("IATA code of the arrival airport"),
-        timestamp: z.string().describe("ISO 8601 arrival date and time"),
-      }),
-      airlines: z.array(
-        z.string().describe("Airline names, e.g., American Airlines, Emirates"),
-      ),
-      priceInUSD: z.number().describe("Flight price in US dollars"),
-      numberOfStops: z.number().describe("Number of stops during the flight"),
+      title: z.string().describe("Title of the document"),
+      question: z.string().describe("The posed question"),
+      answer: z.string().describe("Answer based on the document content"),
     }),
   });
 
-  return { flights: flightSearchResults };
+  return documentAnswer;
 }
 
-export async function generateSampleSeatSelection({
-  flightNumber,
+export async function generateDocumentRelatedQuestions({
+  documentTitle,
 }: {
-  flightNumber: string;
+  documentTitle: string;
 }) {
-  const { object: rows } = await generateObject({
+  const { object: relatedQuestions } = await generateObject({
     model: geminiFlashModel,
-    prompt: `Simulate available seats for flight number ${flightNumber}, 6 seats on each row and 5 rows in total, adjust pricing based on location of seat`,
+    prompt: `List a few follow-up questions that could clarify details about the document titled "${documentTitle}".`,
     output: "array",
     schema: z.array(
       z.object({
-        seatNumber: z.string().describe("Seat identifier, e.g., 12A, 15C"),
-        priceInUSD: z
-          .number()
-          .describe("Seat price in US dollars, less than $99"),
-        isAvailable: z
-          .boolean()
-          .describe("Whether the seat is available for booking"),
-      }),
+        question: z.string().describe("A follow-up question related to the document"),
+      })
     ),
   });
 
-  return { seats: rows };
+  return { questions: relatedQuestions };
 }
 
-export async function generateReservationPrice(props: {
-  seats: string[];
-  flightNumber: string;
-  departure: {
-    cityName: string;
-    airportCode: string;
-    timestamp: string;
-    gate: string;
-    terminal: string;
-  };
-  arrival: {
-    cityName: string;
-    airportCode: string;
-    timestamp: string;
-    gate: string;
-    terminal: string;
-  };
-  passengerName: string;
+export async function generateDocumentReference({
+  documentTitle,
+  schoolName,
+}: {
+  documentTitle: string;
+  schoolName: string;
 }) {
-  const { object: reservation } = await generateObject({
+  const { object: referenceDetails } = await generateObject({
     model: geminiFlashModel,
-    prompt: `Generate price for the following reservation \n\n ${JSON.stringify(props, null, 2)}`,
+    prompt: `Provide reference details for the document titled "${documentTitle}" from ${schoolName}. Include identifiers or version info if available.`,
     schema: z.object({
-      totalPriceInUSD: z
-        .number()
-        .describe("Total reservation price in US dollars"),
+      title: z.string().describe("Title of the document"),
+      schoolName: z.string().describe("Name of the school"),
+      reference: z.string().describe("Reference details for the document"),
     }),
   });
 
-  return reservation;
+  return referenceDetails;
 }

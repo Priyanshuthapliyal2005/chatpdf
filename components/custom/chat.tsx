@@ -6,9 +6,9 @@ import { useState } from "react";
 
 import { Message as PreviewMessage } from "@/components/custom/message";
 import { useScrollToBottom } from "@/components/custom/use-scroll-to-bottom";
-
 import { MultimodalInput } from "./multimodal-input";
 import { Overview } from "./overview";
+import { PreviewAttachment } from "./preview-attachment";
 
 export function Chat({
   id,
@@ -30,18 +30,14 @@ export function Chat({
 
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
-
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
 
   return (
-    <div className="flex flex-row justify-center pb-4 md:pb-8 h-dvh bg-background">
-      <div className="flex flex-col justify-between items-center gap-4">
-        <div
-          ref={messagesContainerRef}
-          className="flex flex-col gap-4 h-full w-dvw items-center overflow-y-scroll"
-        >
+    <div className="flex h-dvh bg-background items-stretch">
+      {/* Left panel: chat messages and input */}
+      <div className="flex flex-col w-1/2">
+        <div ref={messagesContainerRef} className="flex-grow overflow-y-scroll px-4 py-4">
           {messages.length === 0 && <Overview />}
-
           {messages.map((message) => (
             <PreviewMessage
               key={message.id}
@@ -52,14 +48,10 @@ export function Chat({
               toolInvocations={message.toolInvocations}
             />
           ))}
-
-          <div
-            ref={messagesEndRef}
-            className="shrink-0 min-w-[24px] min-h-[24px]"
-          />
+          <div ref={messagesEndRef} className="shrink-0 min-w-[24px] min-h-[24px]" />
         </div>
 
-        <form className="flex flex-row gap-2 relative items-end w-full md:max-w-[500px] max-w-[calc(100dvw-32px) px-4 md:px-0">
+        <form className="px-4 py-2">
           <MultimodalInput
             input={input}
             setInput={setInput}
@@ -72,6 +64,21 @@ export function Chat({
             append={append}
           />
         </form>
+      </div>
+
+      {/* Right panel: full preview of attachments */}
+      <div className="w-1/2 border-l p-4 h-100% flex flex-col items-center justify-center">
+        {attachments.length > 0 ? (
+          attachments.map((attachment) => (
+            <PreviewAttachment
+              key={attachment.url || attachment.name}
+              attachment={attachment}
+              fullPreview
+            />
+          ))
+        ) : (
+          <p className="text-center text-muted-foreground">No attachment selected</p>
+        )}
       </div>
     </div>
   );
