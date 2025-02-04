@@ -36,7 +36,10 @@ export function Chat({
     <div className="flex h-dvh bg-background items-stretch">
       {/* Left panel: chat messages and input */}
       <div className="flex flex-col w-1/2">
-        <div ref={messagesContainerRef} className="flex-grow overflow-y-scroll px-4 py-4">
+        <div
+          ref={messagesContainerRef}
+          className="grow overflow-y-scroll p-4"
+        >
           {messages.length === 0 && <Overview />}
           {messages.map((message) => (
             <PreviewMessage

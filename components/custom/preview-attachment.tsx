@@ -23,7 +23,7 @@ export const PreviewAttachment = ({
   if (contentType && contentType.includes("pdf") && fullPreview) {
     return (
       <div className={containerClass}>
-        <embed src={url} type="application/pdf" className="w-full h-full" />
+        <embed src={url} type="application/pdf" className="size-full" />
         {isUploading && (
           <div className="animate-spin absolute text-zinc-500">
             <LoaderIcon />

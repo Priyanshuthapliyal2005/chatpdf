@@ -1,10 +1,12 @@
 import { convertToCoreMessages, Message, streamText } from "ai";
 import { z } from "zod";
-import { generateDocumentSummary, generateDocumentAnswer, generateDocumentRelatedQuestions, generateDocumentReference } from "@/ai/actions";
 
 import { geminiProModel } from "@/ai";
+import { generateDocumentSummary, generateDocumentAnswer, generateDocumentRelatedQuestions, generateDocumentReference } from "@/ai/actions";
+
 import { auth } from "@/app/(auth)/auth";
 import { createReservation, deleteChatById, getChatById, saveChat } from "@/db/queries";
+
 import { generateUUID } from "@/lib/utils";
 
 export async function POST(request: Request) {
