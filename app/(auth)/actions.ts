@@ -61,17 +61,35 @@ export const register = async (
       password: formData.get("password"),
     });
 
-    let [user] = await getUser(validatedData.email);
+    let user;
+    try {
+      const users = await getUser(validatedData.email);
+      user = users[0];
+    } catch (err) {
+      console.error("Error getting user from DB:", err);
+      return { status: "failed" };
+    }
 
     if (user) {
-      return { status: "user_exists" } as RegisterActionState;
+      return { status: "user_exists" };
     } else {
-      await createUser(validatedData.email, validatedData.password);
-      await signIn("credentials", {
-        email: validatedData.email,
-        password: validatedData.password,
-        redirect: false,
-      });
+      try {
+        await createUser(validatedData.email, validatedData.password);
+      } catch (err) {
+        console.error("Error creating user in DB:", err);
+        return { status: "failed" };
+      }
+
+      try {
+        await signIn("credentials", {
+          email: validatedData.email,
+          password: validatedData.password,
+          redirect: false,
+        });
+      } catch (err) {
+        console.error("Error signing in:", err);
+        return { status: "failed" };
+      }
 
       return { status: "success" };
     }
