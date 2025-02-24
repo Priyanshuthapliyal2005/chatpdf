@@ -12,14 +12,26 @@ export function useScrollToBottom<T extends HTMLElement>(): [
     const end = endRef.current;
 
     if (container && end) {
+      // Initial scroll to bottom
+      requestAnimationFrame(() => {
+        end.scrollIntoView({ behavior: "smooth", block: "end" });
+      });
+
       const observer = new MutationObserver(() => {
-        end.scrollIntoView({ behavior: "instant", block: "end" });
+        // Always scroll to bottom on content changes
+        requestAnimationFrame(() => {
+          const isNearBottom =
+            container.scrollHeight - container.scrollTop - container.clientHeight < 150;
+
+          if (isNearBottom) {
+            end.scrollIntoView({ behavior: "smooth", block: "end" });
+          }
+        });
       });
 
       observer.observe(container, {
         childList: true,
         subtree: true,
-        attributes: true,
         characterData: true,
       });
 

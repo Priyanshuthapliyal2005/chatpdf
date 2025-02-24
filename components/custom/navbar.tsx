@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { User } from "lucide-react";
 
 import { auth, signOut } from "@/app/(auth)/auth";
 
@@ -7,19 +8,23 @@ import { History } from "./history";
 import { SlashIcon } from "./icons";
 import { ThemeToggle } from "./theme-toggle";
 import { Button } from "../ui/button";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 
 export const Navbar = async () => {
   let session = await auth();
+  const userInitial = session?.user?.email?.[0].toUpperCase() || "U";
 
   return (
     <>
-      <div className="bg-background absolute top-0 left-0 w-dvw py-2 px-3 justify-between flex flex-row items-center z-30">
+      <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75 fixed top-0 left-0 right-0 py-2 px-3 justify-between flex flex-row items-center z-30 border-b">
         <div className="flex flex-row gap-3 items-center">
           <History user={session?.user} />
           <div className="flex flex-row gap-2 items-center">
@@ -41,32 +46,39 @@ export const Navbar = async () => {
         {session ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                className="py-1.5 px-2 h-fit font-normal"
-                variant="secondary"
-              >
-                {session.user?.email}
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-primary/10">
+                    {userInitial}
+                  </AvatarFallback>
+                </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">Account</p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {session.user?.email}
+                  </p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <ThemeToggle />
               </DropdownMenuItem>
-              <DropdownMenuItem className="p-1 z-50">
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-red-500 focus:bg-red-500/10 focus:text-red-500">
                 <form
                   className="w-full"
                   action={async () => {
                     "use server";
-
                     await signOut({
                       redirectTo: "/",
                     });
                   }}
                 >
-                  <button
-                    type="submit"
-                    className="w-full text-left px-1 py-0.5 text-red-500"
-                  >
+                  <button type="submit" className="w-full text-left">
                     Sign out
                   </button>
                 </form>
@@ -79,6 +91,7 @@ export const Navbar = async () => {
           </Button>
         )}
       </div>
+      <div className="h-[49px]" /> {/* Spacer for fixed navbar */}
     </>
   );
 };

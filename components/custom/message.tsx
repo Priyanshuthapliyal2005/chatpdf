@@ -21,29 +21,39 @@ export const Message = ({
   role,
   content,
   toolInvocations,
-  attachments,
 }: {
   chatId: string;
   role: string;
   content: string | ReactNode;
   toolInvocations: Array<ToolInvocation> | undefined;
-  attachments?: Array<Attachment>;
 }) => {
   const isUser = role === "user";
 
   return (
     <motion.div
-      className={`flex gap-4 px-4 w-full md:w-[500px] ${isUser ? "flex-row-reverse" : "flex-row"} first-of-type:pt-20`}
+      className={`flex gap-4 px-4 w-full md:max-w-3xl mx-auto ${
+        isUser 
+          ? "flex-row-reverse" 
+          : "flex-row"
+      }`}
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
     >
-      <div className="size-[24px] border rounded-sm p-1 flex flex-col justify-center items-center shrink-0 text-zinc-500">
+      <div className={`size-[28px] border rounded-full p-1.5 flex flex-col justify-center items-center shrink-0 ${
+        isUser 
+          ? "bg-blue-500 border-blue-600 text-white" 
+          : "bg-gray-100 border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-gray-500"
+      }`}>
         {isUser ? <UserIcon /> : <BotIcon />}
       </div>
 
-      <div className="flex flex-col gap-2 w-full">
+      <div className={`flex flex-col gap-2 w-full max-w-[85%] ${isUser ? "items-end" : "items-start"}`}>
         {content && typeof content === "string" && (
-          <div className="text-zinc-800 dark:text-zinc-300 flex flex-col gap-4">
+          <div className={`text-sm md:text-base px-4 py-2.5 rounded-2xl ${
+            isUser
+              ? "bg-blue-500 text-white"
+              : "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+          }`}>
             <Markdown>{content}</Markdown>
           </div>
         )}
@@ -103,14 +113,6 @@ export const Message = ({
                 );
               }
             })}
-          </div>
-        )}
-
-        {attachments && (
-          <div className="flex flex-row gap-2 w-full">
-            {attachments.map((attachment) => (
-              <PreviewAttachment key={attachment.url} attachment={attachment} />
-            ))}
           </div>
         )}
       </div>

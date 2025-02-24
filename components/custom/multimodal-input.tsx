@@ -161,63 +161,96 @@ export function MultimodalInput({
         tabIndex={-1}
       />
 
-      <div className="flex flex-row">
-        <div className="flex-1">
-          <Textarea
-            ref={textareaRef}
-            placeholder="Ask your question about the attached document or image..."
-            value={input}
-            onChange={handleInput}
-            className="min-h-[24px] overflow-hidden resize-none rounded-lg text-base bg-muted border-none"
-            rows={3}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" && !event.shiftKey) {
-                event.preventDefault();
-
-                if (isLoading) {
-                  toast.error("Please wait for the document QA bot to finish its response!");
-                } else {
-                  submitForm();
-                }
-              }
-            }}
-          />
-        </div>
-
-        {isLoading ? (
-          <Button
-            className="rounded-full p-1.5 m-0.5 text-white"
-            onClick={(event) => {
-              event.preventDefault();
-              stop();
-            }}
-          >
-            <StopIcon size={14} />
-          </Button>
-        ) : (
-          <Button
-            className="rounded-full p-1.5 m-0.5 text-white"
-            onClick={(event) => {
-              event.preventDefault();
-              submitForm();
-            }}
-            disabled={input.length === 0 || uploadQueue.length > 0}
-          >
-            <ArrowUpIcon size={14} />
-          </Button>
+      <div className="flex flex-col space-y-2">
+        {/* Attachments preview */}
+        {attachments.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto pb-2 px-1 md:px-0">
+            {attachments.map((attachment) => (
+              <div key={attachment.url || attachment.name} className="shrink-0">
+                <PreviewAttachment
+                  attachment={attachment}
+                  fullPreview={false}
+                />
+              </div>
+            ))}
+          </div>
         )}
 
-        <Button
-          className="rounded-full p-1.5 m-0.5 dark:border-zinc-700"
-          onClick={(event) => {
-            event.preventDefault();
-            fileInputRef.current?.click();
-          }}
-          variant="outline"
-          disabled={isLoading}
-        >
-          <PaperclipIcon size={14} />
-        </Button>
+        {/* Input area */}
+        <div className="flex flex-row items-end gap-2">
+          <div className="flex-1 relative">
+            <Textarea
+              ref={textareaRef}
+              placeholder="Ask your question about the attached document or image..."
+              value={input}
+              onChange={handleInput}
+              className="min-h-[44px] md:min-h-[24px] py-3 md:py-2 pr-20 overflow-hidden resize-none rounded-xl text-base bg-muted border-none"
+              rows={1}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                  event.preventDefault();
+
+                  if (isLoading) {
+                    toast.error("Please wait for the document QA bot to finish its response!");
+                  } else {
+                    submitForm();
+                  }
+                }
+              }}
+            />
+            
+            <div className="absolute right-2 bottom-2 flex items-center gap-1">
+              {isLoading ? (
+                <Button
+                  size="icon"
+                  className="h-8 w-8 rounded-lg"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    stop();
+                  }}
+                >
+                  <StopIcon size={16} />
+                </Button>
+              ) : (
+                <Button
+                  size="icon"
+                  className="h-8 w-8 rounded-lg"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    submitForm();
+                  }}
+                  disabled={input.length === 0 || uploadQueue.length > 0}
+                >
+                  <ArrowUpIcon size={16} />
+                </Button>
+              )}
+
+              <Button
+                size="icon"
+                className="h-8 w-8 rounded-lg dark:border-zinc-700"
+                onClick={(event) => {
+                  event.preventDefault();
+                  fileInputRef.current?.click();
+                }}
+                variant="outline"
+                disabled={isLoading}
+              >
+                <PaperclipIcon size={16} />
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Upload queue indicator */}
+        {uploadQueue.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-sm text-muted-foreground"
+          >
+            Uploading {uploadQueue.length} file(s)...
+          </motion.div>
+        )}
       </div>
     </div>
   );

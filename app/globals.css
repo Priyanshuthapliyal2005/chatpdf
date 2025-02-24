@@ -128,3 +128,40 @@
         @apply bg-foreground/20 animate-pulse;
     }
 }
+
+/* Split Pane Styles */
+.split {
+  display: flex;
+  flex-direction: row;
+}
+
+.gutter {
+  background-color: hsl(var(--border));
+  position: relative;
+}
+
+.gutter:hover {
+  background-color: hsl(var(--primary));
+}
+
+.gutter.gutter-horizontal {
+  cursor: col-resize;
+}
+
+.gutter.gutter-horizontal::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  height: 32px;
+  width: 4px;
+  background-color: currentColor;
+  border-radius: 9999px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.gutter.gutter-horizontal:hover::after {
+  opacity: 0.2;
+}
