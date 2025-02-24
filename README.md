@@ -73,11 +73,13 @@ This diagram provides an overview of the system, showing how the user interacts 
 ```mermaid
 graph TD
     A[User] -->|Uploads Document / Asks Question| B[Next.js Frontend]
-    B -->|Processes UI Requests| C[Backend API (Next.js)]
+    B -->|Processes UI Requests| C[Backend API Next.js]
     C -->|Calls AI SDK for Text Processing| D[Gemini AI Model]
     C -->|Fetches/Saves Data| E[Vercel Postgres & Blob Storage]
     C -->|Handles Authentication| F[NextAuth.js]
     E -->|Stores & Retrieves Documents| G[Blob Storage]
+
+
 ```
 
 ---
@@ -88,15 +90,15 @@ This diagram shows key components of the system and their interactions.
 ```mermaid
 graph TD
     subgraph Frontend
-        A1[Next.js (React, shadcn/ui)]
+        A1[Next.js , React, shadcn/ui]
         A2[Client-side Routing]
         A3[Chat & Document Viewer]
     end
 
     subgraph Backend
         B1[Next.js Server Actions]
-        B2[AI SDK (Gemini API)]
-        B3[Authentication (NextAuth.js)]
+        B2[AI SDK Gemini API]
+        B3[Authentication NextAuth.js]
         B4[Database Access Layer]
     end
 
