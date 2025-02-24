@@ -13,7 +13,8 @@
     "import/order": "off", // Disable import order rule
     "no-unused-vars": "off", // Disable no-unused-vars rule
     "no-console": "off", // Disable no-console rule
-    "react/prop-types": "off" // Disable react/prop-types rule
+    "react/prop-types": "off", // Disable react/prop-types rule
+    "tailwindcss/enforces-shorthand": "off"
   },
   "settings": {
     "import/resolver": {
