@@ -64,3 +64,85 @@ Your application will be running at [http://localhost:3000](http://localhost:300
 pnpm build
 pnpm start
 ```
+
+---
+
+### **1. Basic Architecture**
+This diagram provides an overview of the system, showing how the user interacts with the application.
+
+```mermaid
+graph TD
+    A[User] -->|Uploads Document / Asks Question| B[Next.js Frontend]
+    B -->|Processes UI Requests| C[Backend API (Next.js)]
+    C -->|Calls AI SDK for Text Processing| D[Gemini AI Model]
+    C -->|Fetches/Saves Data| E[Vercel Postgres & Blob Storage]
+    C -->|Handles Authentication| F[NextAuth.js]
+    E -->|Stores & Retrieves Documents| G[Blob Storage]
+```
+
+---
+
+### **2. High-Level Design (HLD)**
+This diagram shows key components of the system and their interactions.
+
+```mermaid
+graph TD
+    subgraph Frontend
+        A1[Next.js (React, shadcn/ui)]
+        A2[Client-side Routing]
+        A3[Chat & Document Viewer]
+    end
+
+    subgraph Backend
+        B1[Next.js Server Actions]
+        B2[AI SDK (Gemini API)]
+        B3[Authentication (NextAuth.js)]
+        B4[Database Access Layer]
+    end
+
+    subgraph Storage
+        C1[Vercel Postgres]
+        C2[Vercel Blob]
+    end
+
+    A1 -->|User Interacts| A3
+    A3 -->|Requests| B1
+    B1 -->|Queries| B2
+    B2 -->|Sends to| B3
+    B3 -->|Authenticates| B4
+    B4 -->|Fetches Data| C1
+    B4 -->|Fetches Documents| C2
+```
+
+---
+
+### **3. Low-Level Design (LLD)**
+A more detailed view, breaking down request handling, storage, and authentication.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Next.js Frontend
+    participant Next.js Backend
+    participant AI SDK (Gemini)
+    participant Database (Vercel Postgres)
+    participant Storage (Vercel Blob)
+    participant Auth (NextAuth.js)
+
+    User ->> Next.js Frontend: Uploads Document / Asks Question
+    Next.js Frontend ->> Next.js Backend: API Request (chat / document)
+    Next.js Backend ->> Auth (NextAuth.js): Validate User Session
+    Auth (NextAuth.js) -->> Next.js Backend: Success / Failure
+    Next.js Backend ->> Database (Vercel Postgres): Fetch User Data
+    Database (Vercel Postgres) -->> Next.js Backend: User Data
+    Next.js Backend ->> Storage (Vercel Blob): Retrieve Document (if needed)
+    Storage (Vercel Blob) -->> Next.js Backend: Document Data
+    Next.js Backend ->> AI SDK (Gemini): Process Question / Extract Info
+    AI SDK (Gemini) -->> Next.js Backend: Processed Response
+    Next.js Backend -->> Next.js Frontend: Response (Text / Processed Data)
+    Next.js Frontend -->> User: Display Answer / Chat Response
+```
+
+---
+
+These diagrams represent the system at different levels of abstraction, from **basic structure** to **detailed request flow**. Let me know if you need modifications or explanations! 🚀
