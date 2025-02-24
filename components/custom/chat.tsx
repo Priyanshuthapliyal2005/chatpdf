@@ -1,8 +1,8 @@
 "use client";
 
-import { Attachment, Message } from "ai";
+import { Attachment, CreateMessage, Message, ToolInvocation } from "ai";
 import { useChat } from "ai/react";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Dispatch, SetStateAction, RefObject, ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Split from 'react-split';
 
@@ -216,9 +216,9 @@ export function Chat({
                   onClick={togglePanel}
                 >
                   {isPanelOpen ? (
-                    <PanelRightClose className="h-4 w-4" />
+                    <PanelRightClose className="size-4" />
                   ) : (
-                    <PanelRightOpen className="h-4 w-4" />
+                    <PanelRightOpen className="size-4" />
                   )}
                 </Button>
               </motion.div>
@@ -270,6 +270,20 @@ export function Chat({
 }
 
 // Extracted components for better organization
+interface ChatContentProps {
+  messagesContainerRef: RefObject<HTMLDivElement>;
+  messagesEndRef: RefObject<HTMLDivElement>;
+  messages: Array<Message>;
+  Overview: React.ComponentType;
+  PreviewMessage: React.ComponentType<{
+    chatId: string;
+    role: string;
+    content: string | ReactNode;
+    toolInvocations?: Array<ToolInvocation>;
+  }>;
+  chatId: string;
+}
+
 function ChatContent({
   messagesContainerRef,
   messagesEndRef,
@@ -277,7 +291,7 @@ function ChatContent({
   Overview,
   PreviewMessage,
   chatId,
-}) {
+}: ChatContentProps) {
   const [showScrollButton, setShowScrollButton] = useState(false);
 
   // Handle scroll events to show/hide scroll button
@@ -361,6 +375,18 @@ function ChatContent({
   );
 }
 
+interface InputAreaProps {
+  input: string;
+  setInput: (value: string) => void;
+  handleSubmit: (event?: { preventDefault?: () => void }) => void;
+  isLoading: boolean;
+  stop: () => void;
+  attachments: Array<Attachment>;
+  setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
+  messages: Array<Message>;
+  append: (message: Message | CreateMessage) => Promise<string | null | undefined>;
+}
+
 function InputArea({
   input,
   setInput,
@@ -371,11 +397,11 @@ function InputArea({
   setAttachments,
   messages,
   append,
-}) {
+}: InputAreaProps) {
   return (
     <div className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75">
       <div className="w-full max-w-2xl mx-auto">
-        <form className="px-4 py-4" onSubmit={handleSubmit}>
+        <form className="p-4" onSubmit={handleSubmit}>
           <MultimodalInput
             input={input}
             setInput={setInput}
