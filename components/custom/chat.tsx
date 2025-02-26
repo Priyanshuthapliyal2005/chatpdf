@@ -45,10 +45,18 @@ export function Chat({
       id,
       body: { id, systemPrompt },
       initialMessages,
-      maxSteps: 10,
+      maxSteps: 1000,
+      onResponse: (response) => {
+        if (!response.ok) {
+          console.error('Response error:', response.statusText);
+        }
+      },
       onFinish: () => {
         window.history.replaceState({}, "", `/chat/${id}`);
       },
+      onError: (error) => {
+        console.error('Chat error:', error);
+      }
     });
 
   const [messagesContainerRef, messagesEndRef] =

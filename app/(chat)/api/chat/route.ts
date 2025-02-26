@@ -22,9 +22,10 @@ export async function POST(request: Request) {
     (message) => message.content.length > 0,
   );
 
-  const result = await streamText({
-    model: geminiProModel,
-    system: `
+  try {
+    const result = await streamText({
+      model: geminiProModel,
+      system: `
         You are an intelligent AI assistant designed to provide comprehensive information with clear source attribution.
 
         RESPONSE TYPES:
@@ -114,72 +115,76 @@ export async function POST(request: Request) {
         - Images: Description [SOURCE: Image origin]
         - Definitions: Term [SOURCE: Dictionary/Reference]
     `,
-    messages: coreMessages,
-    tools: {
-      generateDocumentSummary: {
-        description: "Generate a structured overview and analysis of a document",
-        parameters: z.object({
-          documentTitle: z.string().describe("Title of the document"),
-          schoolName: z.string().describe("Name of the school"),
-        }),
-        execute: async ({ documentTitle, schoolName }) => {
-          const summary = await generateDocumentSummary({ documentTitle, schoolName });
-          return summary;
+      messages: coreMessages,
+      tools: {
+        generateDocumentSummary: {
+          description: "Generate a structured overview and analysis of a document",
+          parameters: z.object({
+            documentTitle: z.string().describe("Title of the document"),
+            schoolName: z.string().describe("Name of the school"),
+          }),
+          execute: async ({ documentTitle, schoolName }) => {
+            const summary = await generateDocumentSummary({ documentTitle, schoolName });
+            return summary;
+          },
+        },
+        generatePracticeQuestions: {
+          description: "Generate practice questions based on document content",
+          parameters: z.object({
+            documentTitle: z.string().describe("Title of the document"),
+            question: z.string().describe("Question or topic to generate questions about"),
+          }),
+          execute: async ({ documentTitle, question }) => {
+            const questions = await generateDocumentAnswer({ documentTitle, question });
+            return questions;
+          },
+        },
+        generateDetailedExplanation: {
+          description: "Generate detailed explanation for specific topics or concepts",
+          parameters: z.object({
+            documentTitle: z.string().describe("Title of the document"),
+          }),
+          execute: async ({ documentTitle }) => {
+            const explanation = await generateDocumentRelatedQuestions({ documentTitle });
+            return explanation;
+          },
+        },
+        generateStudyMaterial: {
+          description: "Generate supplementary study material",
+          parameters: z.object({
+            documentTitle: z.string().describe("Title of the document"),
+            schoolName: z.string().describe("Name of the school"),
+          }),
+          execute: async ({ documentTitle, schoolName }) => {
+            const material = await generateDocumentReference({ documentTitle, schoolName });
+            return material;
+          },
         },
       },
-      generatePracticeQuestions: {
-        description: "Generate practice questions based on document content",
-        parameters: z.object({
-          documentTitle: z.string().describe("Title of the document"),
-          question: z.string().describe("Question or topic to generate questions about"),
-        }),
-        execute: async ({ documentTitle, question }) => {
-          const questions = await generateDocumentAnswer({ documentTitle, question });
-          return questions;
-        },
-      },
-      generateDetailedExplanation: {
-        description: "Generate detailed explanation for specific topics or concepts",
-        parameters: z.object({
-          documentTitle: z.string().describe("Title of the document"),
-        }),
-        execute: async ({ documentTitle }) => {
-          const explanation = await generateDocumentRelatedQuestions({ documentTitle });
-          return explanation;
-        },
-      },
-      generateStudyMaterial: {
-        description: "Generate supplementary study material",
-        parameters: z.object({
-          documentTitle: z.string().describe("Title of the document"),
-          schoolName: z.string().describe("Name of the school"),
-        }),
-        execute: async ({ documentTitle, schoolName }) => {
-          const material = await generateDocumentReference({ documentTitle, schoolName });
-          return material;
-        },
-      },
-    },
-    onFinish: async ({ responseMessages }) => {
-      if (session.user && session.user.id) {
-        try {
-          await saveChat({
-            id,
-            messages: [...coreMessages, ...responseMessages],
-            userId: session.user.id,
-          });
-        } catch (error) {
-          console.error("Failed to save chat");
+      onFinish: async ({ responseMessages }) => {
+        if (session.user && session.user.id) {
+          try {
+            await saveChat({
+              id,
+              messages: [...coreMessages, ...responseMessages],
+              userId: session.user.id,
+            });
+          } catch (error) {
+            console.error("Failed to save chat:", error);
+          }
         }
-      }
-    },
-    experimental_telemetry: {
-      isEnabled: true,
-      functionId: "stream-text",
-    },
-  });
+      },
+      experimental_telemetry: {
+        isEnabled: true,
+        functionId: "stream-text",
+      },
+    });
 
-  return result.toDataStreamResponse({});
+    return result.toDataStreamResponse();
+  } catch (error) {
+    console.error("Failed to process chat:", error);
+    return new Response("Internal Server Error", { status: 500 });
+  }
 }
 
 export async function DELETE(request: Request) {

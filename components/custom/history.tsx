@@ -53,18 +53,39 @@ export const History = ({ user }: { user: User | undefined }) => {
     data: history,
     isLoading,
     mutate,
-  } = useSWR<Array<Chat>>(user ? "/api/history" : null, fetcher, {
-    fallbackData: [],
-  });
+    error
+  } = useSWR<Array<Chat>>(
+    user ? "/api/history" : null,
+    fetcher,
+    {
+      fallbackData: [],
+      refreshInterval: 30000, // Refresh every 30 seconds
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      onError: (err) => {
+        console.error('Failed to fetch chat history:', err);
+      }
+    }
+  );
 
+  // Refresh history when pathname changes or after mutations
   useEffect(() => {
-    mutate();
+    const refreshHistory = async () => {
+      try {
+        await mutate();
+      } catch (error) {
+        console.error('Failed to refresh history:', error);
+      }
+    };
+    refreshHistory();
   }, [pathname, mutate]);
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleDelete = async () => {
+    if (!deleteId) return;
+    
     const deletePromise = fetch(`/api/chat?id=${deleteId}`, {
       method: "DELETE",
     });
@@ -72,17 +93,19 @@ export const History = ({ user }: { user: User | undefined }) => {
     toast.promise(deletePromise, {
       loading: "Deleting chat...",
       success: () => {
-        mutate((history) => {
-          if (history) {
-            return history.filter((h) => h.id !== id);
+        mutate((prevHistory) => {
+          if (prevHistory) {
+            return prevHistory.filter((h) => h.id !== deleteId);
           }
-        });
+          return prevHistory;
+        }, false); // Don't revalidate immediately
         return "Chat deleted successfully";
       },
-      error: "Failed to delete chat",
+      error: "Failed to delete chat"
     });
 
     setShowDeleteDialog(false);
+    setDeleteId(null);
   };
 
   return (
