@@ -127,12 +127,62 @@ export function convertToUIMessages(
 }
 
 export function getTitleFromChat(chat: Chat) {
-  const messages = convertToUIMessages(chat.messages as Array<CoreMessage>);
-  const firstMessage = messages[0];
+  try {
+    // Ensure we have messages
+    if (!chat.messages || !Array.isArray(chat.messages)) {
+      return "Untitled Chat";
+    }
 
-  if (!firstMessage) {
-    return "Untitled";
+    const messages = chat.messages as Array<CoreMessage>;
+    
+    // Convert messages to UI format to handle different message types properly
+    const uiMessages = convertToUIMessages(messages);
+    
+    // Get all user messages
+    const userMessages = uiMessages.filter(msg => msg.role === 'user' && msg.content?.trim().length > 0);
+    
+    if (!userMessages.length) {
+      return "Untitled Chat";
+    }
+
+    // Try to find a meaningful title from user messages
+    for (const msg of userMessages) {
+      const content = msg.content.trim();
+      
+      // Skip very short messages or common queries
+      if (content.length < 3 || /^(hi|hello|hey|test)$/i.test(content)) {
+        continue;
+      }
+
+      // If it's a question, use it as title
+      if (content.includes('?')) {
+        const question = content.split('?')[0] + '?';
+        if (question.length <= 50) {
+          return question;
+        }
+        return question.slice(0, 47) + '...';
+      }
+
+      // For other messages, use smart truncation
+      if (content.length <= 50) {
+        return content;
+      }
+
+      // Create a smart truncation
+      const words = content.split(/\s+/).slice(0, 8);
+      let title = words.join(' ');
+      
+      if (title.length > 47) {
+        title = title.slice(0, 47);
+      }
+      
+      return title + '...';
+    }
+
+    // If no good title found from messages, use timestamp-based title
+    return "Chat from " + new Date(chat.createdAt).toLocaleDateString();
+  } catch (error) {
+    console.error('Error generating chat title:', error);
+    return "Untitled Chat";
   }
-
-  return firstMessage.content;
 }

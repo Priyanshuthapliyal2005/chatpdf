@@ -59,7 +59,7 @@ export const History = ({ user }: { user: User | undefined }) => {
     fetcher,
     {
       fallbackData: [],
-      refreshInterval: 30000, // Refresh every 30 seconds
+      refreshInterval: 5000, 
       revalidateOnFocus: true,
       revalidateOnReconnect: true,
       onError: (err) => {
@@ -206,7 +206,10 @@ export const History = ({ user }: { user: User | undefined }) => {
                         href={`/chat/${chat.id}`}
                         className="text-ellipsis overflow-hidden text-left py-2 pl-2 rounded-lg outline-zinc-900"
                       >
-                        {getTitleFromChat(chat)}
+                        {(() => {
+                          console.debug('Generating title for chat:', { id: chat.id, messages: chat.messages });
+                          return getTitleFromChat(chat);
+                        })()}
                       </Link>
                     </Button>
 
