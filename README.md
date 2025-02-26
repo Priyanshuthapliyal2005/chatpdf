@@ -242,7 +242,7 @@ sequenceDiagram
 
 ## 🚀 API Overview  
 
-This project provides a database utility module using **Drizzle ORM** and **PostgreSQL** to handle users, chats, and reservations. Below is an overview of the available functions:
+This project provides a database utility module using **Drizzle ORM** and **PostgreSQL** to handle users and chats. Below is an overview of the available functions:
 
 ### 🧑‍💻 User Management  
 

@@ -22,8 +22,13 @@ export const PreviewAttachment = ({
   // If the attachment is a PDF, render an embed element
   if (contentType && contentType.includes("pdf") && fullPreview) {
     return (
-      <div className={containerClass}>
-        <embed src={url} type="application/pdf" className="size-full" />
+      <div className={`${containerClass} min-h-[500px]`}>
+        <embed 
+          src={url} 
+          type="application/pdf" 
+          className="w-full h-full rounded-md"
+          style={{ minHeight: "500px" }}
+        />
         {isUploading && (
           <div className="animate-spin absolute text-zinc-500">
             <LoaderIcon />
@@ -39,8 +44,9 @@ export const PreviewAttachment = ({
 
   return (
     <div className={containerClass}>
-      {contentType ? (
-        contentType.startsWith("image") ? (
+      {fullPreview ? (
+        // Full preview mode
+        contentType && contentType.startsWith("image") ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             key={url}
@@ -52,17 +58,14 @@ export const PreviewAttachment = ({
           <div className="p-4">Preview not available</div>
         )
       ) : (
-        <div className="p-4">Preview not available</div>
+        // Small preview mode - only show file name
+        <div className="text-xs text-zinc-500 max-w-16 truncate">{name}</div>
       )}
 
       {isUploading && (
         <div className="animate-spin absolute text-zinc-500">
           <LoaderIcon />
         </div>
-      )}
-
-      {!fullPreview && (
-        <div className="text-xs text-zinc-500 max-w-16 truncate">{name}</div>
       )}
     </div>
   );
